@@ -210,10 +210,10 @@ int SocketServer::ReceiveFileDescriptor(int &f_FileDescriptor, uint32_t &f_Size)
   }
 
   f_FileDescriptor = *(int *)CMSG_DATA(cmsg);
-  if(f_FileDescriptor < 0) {
+  /*if(f_FileDescriptor < 0) {
     CDMI_ELOG() << "Invalid FD received";
     status = -1;
-  }
+  }*/
 
   CDMI_DLOG() << "SocketServer::ReceiveFileDescriptor(): File descriptor is " << f_FileDescriptor;
   CDMI_DLOG() << "SocketServer::ReceiveFileDescriptor(): File descriptor references " << f_Size << " bytes";

@@ -361,6 +361,10 @@ void decryptShmem(unsigned int idxMES, int idXchngSem, int idXchngShMem, int idS
         goto handle_error;
       }
 #endif
+      CDMI_DLOG() << "decryptShmem: mesShmem->sampleSize: " << mesShmem->sampleSize 
+                  << "mem_sample: " << (unsigned long)mem_sample
+                  << "secureMemSize: " << secureMemSize
+                  << "secureFd: " << secureFd;
 
       cr = pMediaEngineSession->Decrypt(
           subsample_count,          //number of subsamples
@@ -376,17 +380,20 @@ void decryptShmem(unsigned int idxMES, int idXchngSem, int idXchngShMem, int idS
       if(cr!=CDMi_SUCCESS)
         CDMI_ELOG() << "Failed to decrypt sample. Error:" << cr;
 
-#ifndef CFG_SECURE_DATA_PATH
-      // FIXME: opencdm uses a single buffer for passing the
-      //  encrypted and decrypted buffer. Due to this we need an
-      //  additional memcpy
-      if(clear_content_size != mesShmem->sampleSize)
-         CDMI_WLOG() << "Warning: returned clear sample size " << clear_content_size <<
-          "differs from encrypted " <<
-          "buffer size"  << mesShmem->sampleSize;
+//#ifndef CFG_SECURE_DATA_PATH
+      /* Non-secure case */
+      if(secureFd < 0) {
+        // FIXME: opencdm uses a single buffer for passing the
+        //  encrypted and decrypted buffer. Due to this we need an
+        //  additional memcpy
+        if(clear_content_size != mesShmem->sampleSize)
+           CDMI_WLOG() << "Warning: returned clear sample size " << clear_content_size <<
+            "differs from encrypted " <<
+            "buffer size"  << mesShmem->sampleSize;
 
-      memcpy(mem_sample, clear_content, MIN(mesShmem->sampleSize, clear_content_size) );
-#endif
+        memcpy(mem_sample, clear_content, MIN(mesShmem->sampleSize, clear_content_size) );
+      }
+//#endif
 
 handle_error:
 #ifdef CFG_SECURE_DATA_PATH
